@@ -13,7 +13,12 @@ Future<Connection> conectarBD() async {
     database: 'postgres',
     username: 'postgres',
     password: '2609',
-  ));
+    port:     5432
+  ),
+    settings: ConnectionSettings(
+      sslMode: SslMode.disable),
+  );
+  print('Conexion: =====> $_conn');
   return _conn!;
 }
 
@@ -23,7 +28,7 @@ Future<void> cerrarBD() async {
 
 Future<void> createUser(String username, String email, String password) async {
     final conn = await conectarBD();
-    await conn.execute(
+    conn.execute(
         'INSERT INTO users (username, email, password) VALUES (@username, @email, @password)',
         parameters: {'username': username, 'email': email, 'password': password});
     await conn.close();
@@ -31,14 +36,14 @@ Future<void> createUser(String username, String email, String password) async {
 
 Future<Result?> getUsers() async {
   await conectarBD();
-  final result = await conn?.execute('SELECT * FROM users');
+  final result = conn?.execute('SELECT * FROM users');
   await cerrarBD();
   return result;
 }
 
 Future<void> updateUser(int id, String username, String email, String password) async {
     final conn = await conectarBD();
-    await conn.execute(
+    conn.execute(
         'UPDATE users SET username = @username, email = @email, password = @password WHERE id = @id',
         parameters: {'id': id, 'username': username, 'email': email, 'password': password});
     await conn.close();
@@ -46,7 +51,7 @@ Future<void> updateUser(int id, String username, String email, String password) 
 
 Future<void> deleteUser(int id) async {
     final conn = await conectarBD();
-    await conn.execute('DELETE FROM users WHERE id = @id', parameters: {'id': id});
+    conn.execute('DELETE FROM users WHERE id = @id', parameters: {'id': id});
     await conn.close();
 }
 
@@ -57,17 +62,17 @@ void main(List<String> arguments) async {
     print(body);
   });
 
-  await createUser('usuario1', 'usuario1@example.com', 'contraseña1');
+  createUser('usuario1', 'usuario1@example.com', 'contraseña1');
     await getUsers().then((users) {
         print(users);
     });
 
-    await updateUser(1, 'nuevo_usuario', 'nuevo_correo@example.com', 'nueva_contraseña');
+  updateUser(1, 'nuevo_usuario', 'nuevo_correo@example.com', 'nueva_contraseña');
     await getUsers().then((users) {
         print(users);
     });
 
-    await deleteUser(1);
+  deleteUser(1);
     await getUsers().then((users) {
         print(users);
     });
